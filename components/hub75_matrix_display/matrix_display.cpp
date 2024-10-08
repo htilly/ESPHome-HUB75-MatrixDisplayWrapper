@@ -7,6 +7,35 @@ namespace esphome
 
         static const char *const TAG = "MatrixDisplay";
 
+        inline VirtualCoords MyVirtualMatrixPanel::getCoords(int16_t virt_x, int16_t virt_y)
+        {
+          if (virt_y&8) {
+            if ((virt_x&63)<16) {
+            } else if ((virt_x&63)<32) {
+              virt_x^=48;
+            } else if ((virt_x&63)<48) {
+              virt_x^=32;
+              virt_y^=8;
+            } else if ((virt_x&63)<64) {
+              virt_x^=16;
+              virt_y^=8;
+            }
+          } else {
+            if ((virt_x&63)<16) {
+              virt_x^=16;
+              virt_y^=8;
+            } else if ((virt_x&63)<32) {
+              virt_x^=32;
+              virt_y^=8;
+            } else if ((virt_x&63)<48) {
+              virt_x^=48;
+            } else if ((virt_x&63)<64) {
+            }
+          }
+          VirtualMatrixPanel::getCoords(virt_x, virt_y);
+          return coords;
+        }
+
         /**
          * Initialize the wrapped matrix display with user parameters
          */
@@ -16,8 +45,8 @@ namespace esphome
 
             // Module configuration
             HUB75_I2S_CFG mxconfig(
-                panel_width_,  // module width
-                panel_height_, // module height
+                panel_width_*2,  // module width
+                panel_height_/2, // module height
                 chain_length_, // Chain length
                 pins_);
 
@@ -42,6 +71,7 @@ namespace esphome
             dma_display_->begin();
             set_brightness(initial_brightness_);
             dma_display_->clearScreen();
+            vmp = new MyVirtualMatrixPanel((*dma_display_), 1, chain_length_, panel_width_, panel_height_);
 
             // Default to off if power switches are present
             set_state(!power_switches_.size());
@@ -59,10 +89,10 @@ namespace esphome
             }
             else
             {
-                dma_display_->clearScreen();
+                vmp->clearScreen();
             }
             // Flip buffer to show changes
-            dma_display_->flipDMABuffer();
+            vmp->flipDMABuffer();
         }
 
         void MatrixDisplay::dump_config()
@@ -139,19 +169,19 @@ namespace esphome
                 return;
 
             // Update pixel value in buffer
-            dma_display_->drawPixelRGB888(x, y, color.r, color.g, color.b);
+            vmp->drawPixelRGB888(x, y, color.r, color.g, color.b);
         }
 
         void MatrixDisplay::fill(Color color)
         {
             // Wrap fill screen method
-            dma_display_->fillScreenRGB888(color.r, color.g, color.b);
+            vmp->fillScreenRGB888(color.r, color.g, color.b);
         }
 
         void MatrixDisplay::filled_rectangle(int x1, int y1, int width, int height, Color color)
         {
             // Wrap fill rectangle method
-            dma_display_->fillRect(x1, y1, width, width, color.r, color.g, color.b);
+            vmp->fillRect(x1, y1, width, width, color.r, color.g, color.b);
         }
 
     } // namespace matrix_display

@@ -8,6 +8,7 @@
 #include "esphome/components/display/display_buffer.h"
 
 #include "ESP32-HUB75-MatrixPanel-I2S-DMA.h"
+#include "ESP32-VirtualMatrixPanel-I2S-DMA.h"
 
 namespace esphome
 {
@@ -25,6 +26,30 @@ namespace esphome
             class MatrixDisplayBrightness;
             static void set_reference(MatrixDisplayBrightness *brightness, MatrixDisplay *display);
         } // namespace matrix_display_brightness
+
+        class MyVirtualMatrixPanel: public VirtualMatrixPanel
+        {
+        public:
+            MyVirtualMatrixPanel(MatrixPanel_I2S_DMA &disp,
+                  int _vmodule_rows,
+                  int _vmodule_cols,
+                  int _panelResX,
+                  int _panelResY,
+                  PANEL_CHAIN_TYPE _panel_chain_type = CHAIN_NONE
+            ) : VirtualMatrixPanel(disp, _vmodule_rows, _vmodule_cols,
+                    _panelResX, _panelResY, _panel_chain_type)
+            {
+                setPhysicalPanelScanRate(FOUR_SCAN_32PX_HIGH);
+            }
+
+            virtual VirtualCoords getCoords(int16_t x, int16_t y);
+            virtual inline void fillRect(int16_t x, int16_t y,
+                                         int16_t w, int16_t h,
+                                         uint8_t r, uint8_t g, uint8_t b)
+            {
+              // FIXME
+            }
+        };
 
         class MatrixDisplay : public display::DisplayBuffer
         {
@@ -229,6 +254,9 @@ namespace esphome
         protected:
             /// @brief Wrapped matrix display
             MatrixPanel_I2S_DMA *dma_display_ = nullptr;
+
+            /// @brief Wrapped virtual matrix display
+            MyVirtualMatrixPanel  *vmp = nullptr;
 
             /// @brief pin configuration
             HUB75_I2S_CFG::i2s_pins pins_;
