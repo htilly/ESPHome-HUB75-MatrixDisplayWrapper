@@ -6,6 +6,8 @@ This ESPHome component wraps the library into an ESPHome [display component](htt
 This wrapper currently only supports horizontally chained panels.
 [Vertically aligned panels and VirtualDisplays](https://github.com/mrcodetastic/ESP32-HUB75-MatrixPanel-DMA/tree/master/examples/ChainedPanels) are currently not supported.
 
+Actually, in this fork, a VirtualDisplayPanel *is* supported, but primarily to enable support for "8 scan" panels, which need coordinate remapping to function correctly. This is *not* intended as an example of how to implement this in a reusable, generically useful way, it was intended as a quick and dirty fix to get the panel working. The specific platform in use is the Huidu WF1, with these panels (https://www.aliexpress.us/item/1005003238025086.html). I have two panels, and attempted to configure a chain of two panels, which I previously had working using non-ESPHome code, but only succeeded in crashing the WF1 repeatedly. For the moment, the best you can do with two panels is simply mirror them, which happens automatically if the `chain_length:` parameter is set to 1.
+
 ### My Pixel Art display
 
 - 32x64 Pixel P5 Panel

@@ -1,0 +1,122 @@
+# https://github.com/DongTuan/Esphome/blob/main/Led-matrix-hub75-huidu-wf1/led-matrix-hub75-huidu-wf1.yaml
+esphome:
+  name: "wf1"
+  friendly_name: WF1
+  platformio_options:
+        board_build.flash_mode: dio
+        upload_resetmethod: no_reset
+
+external_components:
+  - source: github://RoganDawes/ESPHome-HUB75-MatrixDisplayWrapper@main
+    components: [hub75_matrix_display]
+
+esp32:
+  board: esp32-s2-saola-1
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: !secret api_password
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "WF1"
+    password: !secret wifi_ap_password
+
+captive_portal:
+
+i2c:
+  sda: 41
+  scl: 42
+
+time:
+  - platform: pcf8563
+    address: 0x51
+    id: pcf8563_time
+  - platform: homeassistant
+    on_time_sync:
+      then:
+        pcf8563.write_time:
+
+font:
+  # gfonts://family[@weight]
+  - file: "gfonts://Roboto"
+    id: roboto
+    size: 10
+
+display:
+  - platform: hub75_matrix_display
+    id: matrix
+    width: 64
+    height: 32
+    chain_length: 1
+    brightness: 64
+    driver: FM6124
+    i2sspeed: HZ_20M
+    # clock_phase: false
+    # latch_blanking: 10
+    R1_pin: 2
+    R2_pin: 4
+    G1_pin: 6
+    G2_pin: 8
+    B1_pin: 3
+    B2_pin: 5
+    A_pin: 39
+    B_pin: 38
+    C_pin: 37
+    D_pin: 36
+    E_pin: 12
+    OE_pin: 35
+    CLK_pin: 34
+    LAT_pin: 33
+    update_interval: 1s
+    lambda: |-
+      auto red = Color(255, 0, 0);
+      auto blue = Color(0, 0, 255);
+      auto green = Color(0, 255, 0);
+      auto rtc = id(pcf8563_time).now();
+      // if (rtc.second % 2) {
+      // it.line(0, 31, 63, 31, blue);
+      // it.line(0, 0, 63, 31, red);
+      // it.line(0, 0, 63, 0, green);
+      // } else {
+      it.rectangle(0,0,63,31,red);
+      it.rectangle(1,1,61,29,green);
+      it.rectangle(2,2,59,27,blue);
+      it.strftime(4, 4, id(roboto), "%Y-%m-%d", rtc);
+      it.strftime(4, 16, id(roboto), "%H:%M:%S", rtc);
+      // }
+text_sensor:
+  - platform: homeassistant
+    name: "EspText"
+    id: custom_info
+    entity_id: input_text.custom_info
+switch:
+  - platform: hub75_matrix_display
+    matrix_id: matrix
+    restore_mode: ALWAYS_ON
+    id: matrix_power
+  - platform: gpio
+    id: led_run
+    pin: 40
+binary_sensor:
+  - platform: gpio
+    id: test_key
+    pin:
+      number: 11
+
+number:
+  - platform: hub75_matrix_display
+    matrix_id: matrix
+    name: "Brightness"
