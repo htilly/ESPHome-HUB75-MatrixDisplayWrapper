@@ -7,33 +7,27 @@ namespace esphome
 
         static const char *const TAG = "MatrixDisplay";
 
-        inline VirtualCoords MyVirtualMatrixPanel::getCoords(int16_t virt_x, int16_t virt_y)
+        inline VirtualCoords MyVirtualMatrixPanel::getCoords(int16_t x, int16_t y)
         {
-          if (virt_y&8) {
-            if ((virt_x&63)<16) {
-            } else if ((virt_x&63)<32) {
-              virt_x^=48;
-            } else if ((virt_x&63)<48) {
-              virt_x^=32;
-              virt_y^=8;
-            } else if ((virt_x&63)<64) {
-              virt_x^=16;
-              virt_y^=8;
+            coords = VirtualMatrixPanel::getCoords(x, y);
+
+            if ( coords.x == -1 || coords.y == -1 ) {
+                return coords;
             }
-          } else {
-            if ((virt_x&63)<16) {
-              virt_x^=16;
-              virt_y^=8;
-            } else if ((virt_x&63)<32) {
-              virt_x^=32;
-              virt_y^=8;
-            } else if ((virt_x&63)<48) {
-              virt_x^=48;
-            } else if ((virt_x&63)<64) {
+
+            uint8_t pxbase_bits = 4;   // pixel base in bits
+            if ((coords.y & 8) == 0)
+            {
+                coords.x += ((coords.x >> pxbase_bits) + 1) << pxbase_bits;
             }
-          }
-          VirtualMatrixPanel::getCoords(virt_x, virt_y);
-          return coords;
+            else
+            {
+                coords.x += (coords.x >> pxbase_bits) << pxbase_bits;
+            }
+
+            coords.y = ((coords.y >> 4) << 3) + (coords.y & 0b00000111);
+
+            return coords;
         }
 
         /**

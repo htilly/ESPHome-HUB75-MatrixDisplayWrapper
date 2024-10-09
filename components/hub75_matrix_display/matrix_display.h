@@ -39,7 +39,6 @@ namespace esphome
             ) : VirtualMatrixPanel(disp, _vmodule_rows, _vmodule_cols,
                     _panelResX, _panelResY, _panel_chain_type)
             {
-                setPhysicalPanelScanRate(FOUR_SCAN_32PX_HIGH);
             }
 
             virtual VirtualCoords getCoords(int16_t x, int16_t y);
