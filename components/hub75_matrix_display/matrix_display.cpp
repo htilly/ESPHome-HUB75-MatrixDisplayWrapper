@@ -60,6 +60,9 @@ namespace esphome
 
             mxconfig.double_buff = true;
 
+            // Tell the driver it's a 1/8 scan panel:
+            mxconfig.rows = 8;
+
             // Display Setup
             dma_display_ = new MatrixPanel_I2S_DMA(mxconfig);
             dma_display_->begin();
