@@ -39,8 +39,8 @@ namespace esphome
 
             // Module configuration
             HUB75_I2S_CFG mxconfig(
-                panel_width_*2,  // module width
-                panel_height_/2, // module height
+                panel_width_,  // module width
+                panel_height_, // module height
                 chain_length_, // Chain length
                 pins_);
 
